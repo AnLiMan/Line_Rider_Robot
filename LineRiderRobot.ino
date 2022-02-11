@@ -14,7 +14,7 @@
 #define MaxAngleSensetivity 5 // Максимальный угол нечувствительности руля в градусах
 
 #define BlinkPeriodForTurnSignal 200 //Период моргания поворотников
-#define MaxModes 4 //Количество режимов
+#define MaxModes 5 //Количество режимов
 #define idleSpeedLineAndMemory 105 // Скорость для режима работы следования по линии и движения по памяти
 
 //-----Выводы------
@@ -151,6 +151,10 @@ void loop() {
         digitalWrite(RearDimensionsAndHeadlights, HIGH);
         idleSpeed = map(analogRead(Accelerator), 0, 1022, 0, 255); // Преобразуем входное значение сопротивления к новому диапазону
         WriteWayInMemory();
+        break;
+      //1.5. Очистка памяти. Индикатор - мигающий зелёный
+      case 4:
+        MemoryClean();
         break;
     }
   }
@@ -363,6 +367,15 @@ void WriteWayInMemory () {
   }
 }
 
+//------------1.4. Очистка памяти-----------------
+void MemoryClean () {
+  for (i = 0; i <= 1023; i++ ) {
+    eeprom_update_byte(i, 0);
+  }
+  counter = 0; //Выходим в нулевой режим
+}
+
+
 //--------------------------------------------------------------//
 //----------------2 Функции отработки прерываний--------------
 //--------------------------------------------------------------//
@@ -426,6 +439,15 @@ void CurrentMode(int currentMode) {
       if (millis() - myTimer1 >= BlinkPeriodForTurnSignal) {
         myTimer1 += BlinkPeriodForTurnSignal;
         digitalWrite(BlueChannelRGB, !digitalRead(BlueChannelRGB));
+      }
+      break;
+    case 4:
+      digitalWrite(RedChannelRGB, LOW);
+      digitalWrite(BlueChannelRGB, LOW);
+
+      if (millis() - myTimer1 >= BlinkPeriodForTurnSignal) {
+        myTimer1 += BlinkPeriodForTurnSignal;
+        digitalWrite(GrennChannelRGB, !digitalRead(GrennChannelRGB));
       }
       break;
   }
